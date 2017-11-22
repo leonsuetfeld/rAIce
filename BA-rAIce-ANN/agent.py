@@ -311,6 +311,13 @@ class AbstractRLAgent(AbstractAgent):
 #        return progress-stay_on_street
 
 
+# LEON GO HERE FOR REWARD FUNCTION
+
+#    def calculateReward(self, *gameState):
+#        vvec1_hist, vvec2_hist, otherinput_hist, action_hist = gameState
+
+
+
     def randomAction(self, agentState):
         print("Random Action", level=2)
         action = np.random.randint(4) if self.conf.INCLUDE_ACCPLUSBREAK else np.random.randint(3)
