@@ -298,23 +298,11 @@ class AbstractRLAgent(AbstractAgent):
         rew = max(rew, 0) #logik dahinter: wenn das auto neben der wand steht, dann entscheidet es sich doch bei sonst nur negativen rewards freiwillig dafür in die wand zu fahren um sein leiden zu beenden (-2 + 0*negativerwert größer -2+gamma*negativerwert)
         return rew
 
-
-#    def calculateReward(self, *gameState):
-#        vvec1_hist, vvec2_hist, otherinput_hist, action_hist = gameState
-#        progress_old = otherinput_hist[3].ProgressVec.Progress
-#        progress_new = otherinput_hist[0].ProgressVec.Progress
-#        if progress_old > 90 and progress_new < 10:
-#            progress_new += 100
-#        progress = round(progress_new-progress_old,3)
-#        stay_on_street = abs(otherinput_hist[0].CenterDist[0])
-#        stay_on_street = round(0 if stay_on_street < 5 else self.wallhitPunish if stay_on_street >= 10 else stay_on_street/20, 3)
-#        return progress-stay_on_street
-
-
 # LEON GO HERE FOR REWARD FUNCTION
 
-#    def calculateReward(self, *gameState):
-#        vvec1_hist, vvec2_hist, otherinput_hist, action_hist = gameState
+   # def calculateReward(self, *gameState):
+   #     vvec1_hist, vvec2_hist, otherinput_hist, action_hist = gameState
+   # 
 
 
 
