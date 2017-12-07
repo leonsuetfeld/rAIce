@@ -176,7 +176,8 @@ class receiver_thread(threading.Thread):
             resetServer(self.containers, data[11:])
             specialcommand = True
         if data[:7] == "wallhit":
-            self.containers.myAgent.handle_commands("wallhit")
+            impact_relvel = int(data[8:])
+            self.containers.myAgent.handle_commands("wallhit", magnitude=impact_relvel)
             specialcommand = True
         if data[:8] == "endround":
             self.containers.myAgent.handle_commands("lapdone", data[8]==1)

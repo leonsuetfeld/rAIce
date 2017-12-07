@@ -302,7 +302,7 @@ class AbstractRLAgent(AbstractAgent):
 
    # def calculateReward(self, *gameState):
    #     vvec1_hist, vvec2_hist, otherinput_hist, action_hist = gameState
-   # 
+   #
 
 
 
@@ -327,9 +327,9 @@ class AbstractRLAgent(AbstractAgent):
         return result, (throttle, brake, steer)  #er returned immer toUse, toSave
 
 
-    def handle_commands(self, command, wasValid=False):
+    def handle_commands(self, command, wasValid=False, wallhit_relvel=0):
         if command == "wallhit":
-            self.punishLastAction(self.wallhitPunish)   #ist das doppelt gemoppelt damit, dass er eh das if punish > 10 beibehält?
+            self.punishLastAction(get_wallhit_punishment(wallhit_relvel))   #ist das doppelt gemoppelt damit, dass er eh das if punish > 10 beibehält?
             self.endEpisode("wallhit", self.containers.inputval.read())
         if command == "lapdone":
             print("Lap finished", level=6)
@@ -340,6 +340,9 @@ class AbstractRLAgent(AbstractAgent):
         if command == "turnedaround":
             self.punishLastAction(self.wrongDirPunish)
             self.endEpisode("turnedaround", self.containers.inputval.read())
+
+    def get_wallhit_punishment(rv):
+        return 0.3+rv/10.0
 
 
     ###########################################################################
