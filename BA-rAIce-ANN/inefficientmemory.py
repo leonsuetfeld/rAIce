@@ -36,7 +36,7 @@ class Memory(object):
         self._appendcount = 0
         self.lastsavetime = current_milli_time()
         self._size = 0
-        
+
         if (not self.agent.start_fresh) and load:
             corrupted = False
             if os.path.exists(self.memorypath+SAVENAME+'.pkl'):
@@ -49,82 +49,82 @@ class Memory(object):
                 except:
                     corrupted = True
             if corrupted:
-                print("Previous memory was corrupted!", level=10) 
+                print("Previous memory was corrupted!", level=10)
                 if os.path.exists(self.memorypath+SAVENAME+'TMP.pkl'):
-                    if os.path.getsize(self.memorypath+SAVENAME+'TMP.pkl') > 1024: 
+                    if os.path.getsize(self.memorypath+SAVENAME+'TMP.pkl') > 1024:
                         shutil.copyfile(self.memorypath+SAVENAME+'TMP.pkl', self.memorypath+SAVENAME+'.pkl')
                         self.pload(self.memorypath+SAVENAME+'.pkl', conf, agent, lock)
                         print("Loading Backup-Memory with", self._size, "entries", level=10)
-            
+
         self.epistart = self._pointer
-        
-        
+
+
     def __len__(self):
         with self._lock:
-            return self._size            
-            
-    
+            return self._size
+
+
     def append(self, obj):
         with self._lock:
-                        
-            self._buffer[self._pointer] = obj                      
-            self._pointer = (self._pointer + 1) % self.capacity            
-            
+
+            self._buffer[self._pointer] = obj
+            self._pointer = (self._pointer + 1) % self.capacity
+
             self._appendcount += 1
             if self._size < self.capacity:
                 self._size += 1
-            
-            if self.agent.keep_memory and self.conf.save_memory_all_mins: 
+
+            if self.agent.keep_memory and self.conf.save_memory_all_mins:
                 if ((current_milli_time() - self.lastsavetime) / (1000*60)) > self.conf.save_memory_all_mins: #previously: if self._appendcount % self.conf.savememoryall == 0:
+                    print("saving memory", level=10)
                     self.save_memory()
-    
-    
+
+
     def save_memory(self):
-        with self._lock:
-            if self.agent.keep_memory: 
-                self.agent.freezeEverything("saveMem")
-                self.psave(self.memorypath+SAVENAME+'TMP.pkl')
-                print("Saving Memory at",time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), level=6)
-                if os.path.exists(self.memorypath+SAVENAME+'TMP.pkl'):
-                    if os.path.getsize(self.memorypath+SAVENAME+'TMP.pkl') > 1024: #only use it as memory if you weren't disturbed while writing
-                        shutil.copyfile(self.memorypath+SAVENAME+'TMP.pkl', self.memorypath+SAVENAME+'.pkl')
-                self.lastsavetime = current_milli_time()
-                self.agent.unFreezeEverything("saveMem")   
-           
-            
+        if self.agent.keep_memory:
+            self.agent.freezeEverything("saveMem")
+            self.psave(self.memorypath+SAVENAME+'TMP.pkl')
+            print("Saving Memory at",time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()), level=6)
+            if os.path.exists(self.memorypath+SAVENAME+'TMP.pkl'):
+                if os.path.getsize(self.memorypath+SAVENAME+'TMP.pkl') > 1024: #only use it as memory if you weren't disturbed while writing
+                    shutil.copyfile(self.memorypath+SAVENAME+'TMP.pkl', self.memorypath+SAVENAME+'.pkl')
+            self.lastsavetime = current_milli_time()
+            self.agent.unFreezeEverything("saveMem")
+
+
     def __getitem__(self, index):
         with self._lock:
             return self._buffer[index]
-            
-            
+
+
     def sample(self, n):
         with self._lock:
-            return random.sample(self._buffer[:self._size], n) 
+            return random.sample(self._buffer[:self._size], n)
             #returns [[s,a,r,s2,t],[s,a,r,s2,t],[s,a,r,s2,t],...]
 #            samples = np.random.permutation(self._size-4)[:n]
-#            batch = [self._buffer[i] for i in samples]  
-#            return batch                   
-#                  
+#            batch = [self._buffer[i] for i in samples]
+#            return batch
+#
 #    def sample2(self, n):
-#        return zip(*self.sample(n))      
-#  
-#    
+#        return zip(*self.sample(n))
+#
+#
 #    def sampletest(self, samples):
-#        batch = [self._buffer[i] for i in samples]  
-#        return batch            
+#        batch = [self._buffer[i] for i in samples]
+#        return batch
 
-        
+
     def _pop(self):
         self._pointer = (self._pointer - 1) % self.capacity
         self._size -= 1
         return self._buffer[self._pointer]
-        
-        
-    
+
+
+
     def endEpisode(self):
         if self._size < 2:
             return
-        
+
         lastmemoryentry = self._pop() #oldstate, action, reward, newstate, fEnd
         if lastmemoryentry is not None:
             lastmemoryentry[4] = True
@@ -134,17 +134,17 @@ class Memory(object):
         prev_epistart = self.epistart
         self.epistart = self._pointer
         return prev_epistart, self.epistart
-            
-        
+
+
     def punishLastAction(self, howmuch):
         if self._size < 2:
             return
         lastmemoryentry = self._pop() #oldstate, action, reward, newstate, fEnd
         if lastmemoryentry is not None:
             lastmemoryentry[2] -= abs(howmuch)
-            self.append(lastmemoryentry)     
-    
-    
+            self.append(lastmemoryentry)
+
+
     def average_rewards(self, fromwhere, towhere):
         if fromwhere < towhere:
             tmp = self._buffer[fromwhere:towhere]
@@ -152,30 +152,30 @@ class Memory(object):
             tmp = self._buffer[fromwhere:]+self._buffer[:towhere]
         else:
             tmp = [self._buffer[fromwhere]]
-            
+
         rewards = np.array(list(zip(*tmp))[2])
         return np.mean(rewards)
-    
-    
-    
-    
-            
-        
+
+
+
+
+
+
     #loads everything and then overwrites conf, locks, and lastsavetime, as those are pointers/relative to now.
     def pload(self, filename, conf, agent, lock):
         with open(filename, 'rb') as f:
             tmp_dict = pickle.load(f)
-        self.__dict__.update(tmp_dict) 
+        self.__dict__.update(tmp_dict)
         self.conf = conf
         self.agent = agent
         self._lock = lock
         self.lastsavetime = current_milli_time()
-    
-    
+
+
     def psave(self, filename):
         odict = self.__dict__.copy() # copy the dict since we change it
-        del odict['conf']  
-        del odict['_lock']  
+        del odict['conf']
+        del odict['_lock']
         del odict['agent']
         with open(filename, 'wb') as f:
             pickle.dump(odict, f, pickle.HIGHEST_PROTOCOL)

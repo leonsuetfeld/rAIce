@@ -265,7 +265,8 @@ class InputValContainer(object):
         self.lock.acquire()
         try:
             if not self.just_reset:
-                assert self.action_hist[0] is not None, "the output-val didn't add the last action before running again!"
+                if self.action_hist[0] is None:
+                    print("the output-val didn't add the last action before running again!", level=10)
                 self.has_past_state = True
             #20.7.: deleted the "if is_new..." functionality, as I think its absolutely not helpful
             otherinputs = make_otherinputs(othervecs).normalized() #is now a namedtuple instead of an array
@@ -505,7 +506,7 @@ def create_socket(port):
 def main(conf, agentname, no_learn, show_screen, show_plots, start_fresh, nomemorykeep, nomemoryload, no_epsilon):
     containers = Containers()
     containers.conf = conf
-    # containers.no_learn = no_learn # put it back in if error occurs and investigate. if so, also put containers.no_epsilon = no_epsilon in then. 
+    # containers.no_learn = no_learn # put it back in if error occurs and investigate. if so, also put containers.no_epsilon = no_epsilon in then.
 
     containers.receiverportsocket = create_socket(TCP_RECEIVER_PORT)
     containers.senderportsocket = create_socket(TCP_SENDER_PORT)
